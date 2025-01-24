@@ -6,7 +6,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/am1n000/IOT_part3_app
+    repoURL: https://github.com/am1n000/ael-rhai_app
     targetRevision: HEAD
     path: dev
   destination: 
@@ -18,15 +18,3 @@ spec:
     automated:
       selfHeal: true
       prune: true
-
-
-
-
-      ➜  Desktop sudo journalctl -xe | grep vbox
-Jan 20 19:17:21 user3-ThinkPad addgroup[11197]: Adding group `vboxusers' (GID 124) ...
-Jan 20 19:17:21 user3-ThinkPad groupadd[11200]: group added to /etc/group: name=vboxusers, GID=124
-Jan 20 19:17:21 user3-ThinkPad groupadd[11200]: group added to /etc/gshadow: name=vboxusers
-Jan 20 19:17:21 user3-ThinkPad groupadd[11200]: new group: name=vboxusers, GID=124
-Jan 20 19:17:21 user3-ThinkPad virtualbox[11325]:  * modprobe vboxdrv failed. Please use 'dmesg' to find out why
-Jan 20 19:26:19 user3-ThinkPad virtualbox[14492]:  * modprobe vboxdrv failed. Please use 'dmesg' to find out why
-Jan 20 19:26:38 user3-ThinkPad sudo[14566]:    user3 : TTY=pts/0 ; PWD=/home/user3/Desktop ; USER=root ; COMMAND=/usr/sbin/modprobe vboxdrv
