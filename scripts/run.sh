@@ -17,7 +17,5 @@ echo "ArgoCD admin password: $ARGOCD_PASSWORD"
 
 sudo kubectl apply -f "../confs/app.yaml"
 
-sudo kubectl wait --for=condition=Ready --timeout=600s pod --all -n dev
-
-sudo kubectl port-forward svc/argocd-server -n argocd 8080:443 > /dev/null 2>&1 &
+sudo kubectl port-forward svc/argocd-server -n argocd 8080:443
 
