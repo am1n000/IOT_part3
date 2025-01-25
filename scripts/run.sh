@@ -27,7 +27,8 @@ sudo kubectl config current-context
 echo "------ checking current context--------"
 
 echo "Waiting for ArgoCD pods to be ready..."
-sudo kubectl wait -n argocd --for=condition=Ready pods --all --timeout=60s
+sleep 5;
+sudo kubectl wait -n argocd --for=condition=Ready pods --all --timeout=-1s
 check_success "ArgoCD readiness"
 
 echo "Retrieving ArgoCD admin password..."
