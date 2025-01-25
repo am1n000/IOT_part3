@@ -1,31 +1,57 @@
 #!/bin/bash
 
-# Create a K3d Kubernetes cluster named "iot-ael-rhai"
-# - Maps ports for HTTP (8080 -> 80), HTTPS (8443 -> 443), and custom app (8888 -> 8888) on the load balancer
-sudo k3d cluster create iot-ael-rhai -p 8080:80@loadbalancer -p 8443:443@loadbalancer -p 8888:8888@loadbalancer
+check_success() {
+    if [ $? -ne 0 ]; then
+        echo "Error: $1 failed." >&2
+        exit 1
+    fi
+}
 
-# Create a namespace for ArgoCD (a GitOps continuous delivery tool)
+echo "Deleting existing cluster..."
+sudo k3d cluster delete dev-cluster 2>/dev/null
+
+echo "Creating new K3D cluster..."
+sudo k3d cluster create dev-cluster -p "8888:30080"
+check_success "Cluster creation"
+
+echo "Creating ArgoCD namespace..."
 sudo kubectl create namespace argocd
+check_success "Namespace creation"
 
-# Create a namespace for the development environment
-sudo kubectl create namespace dev
-
-# Save the K3d cluster kubeconfig to the default Kubernetes config location
-# This allows `kubectl` commands to interact with the newly created cluster
-k3d kubeconfig get iot-ael-rhai > ~/.kube/config
-
-# Deploy ArgoCD in the "argocd" namespace by applying the official installation YAML from GitHub
+echo "Installing ArgoCD..."
 sudo kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+check_success "ArgoCD installation"
 
-# Patch the ArgoCD service to change its type to LoadBalancer, making it accessible externally
-sudo kubectl patch svc argocd-server -n argocd -p '{"spec": {"type": "LoadBalancer"}}'
+echo "Waiting for ArgoCD pods to be ready..."
+sudo kubectl wait -n argocd --for=condition=Ready pods --all --timeout=300s
+check_success "ArgoCD readiness"
 
-# Wait for the ArgoCD deployment to roll out successfully
-sudo kubectl -n argocd rollout status deployment argocd-server
+echo "Retrieving ArgoCD admin password..."
+ARGOCD_PASSWORD=$(sudo kubectl get secret argocd-initial-admin-secret -n argocd -o jsonpath="{.data.password}" | base64 --decode)
+check_success "Fetching admin password"
+echo "ArgoCD initial admin password: $ARGOCD_PASSWORD"
 
-# Retrieve and decode the initial admin password for ArgoCD, then print it to the console
-sudo kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d; echo
+echo "Creating development namespace..."
+sudo kubectl create namespace dev
+check_success "Dev namespace creation"
 
-# Apply the ArgoCD application configuration from a local YAML file (./apps/argocd.yaml)
-# This defines applications managed by ArgoCD in the "argocd" namespace
-sudo kubectl apply -f ./apps/argocd.yaml -n argocd
+echo "Deploying application..."
+sudo kubectl apply -f ../confs/app.yaml
+check_success "Application deployment"
+
+echo "Waiting for application pods to start..."
+while true; do
+    POD_STATE=$(sudo kubectl get po -n dev --output="jsonpath={.items..phase}")
+    if [[ "$POD_STATE" == "Running" ]]; then
+        echo "Application is running."
+        break
+    fi
+    echo "Creating app, waiting..."
+    sleep 10
+done
+
+echo "Starting port-forwarding for ArgoCD..."
+sudo kubectl port-forward svc/argocd-server -n argocd 8080:443 > /dev/null 2>&1 &
+check_success "Port-forwarding setup"
+
+echo "Setup completed. Access ArgoCD at https://localhost:8080"
