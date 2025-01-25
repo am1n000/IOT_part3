@@ -17,12 +17,7 @@ echo "ArgoCD admin password: $ARGOCD_PASSWORD"
 
 sudo kubectl apply -f "../confs/app.yaml"
 
-while true; do
-    POD_STATE=$(sudo kubectl get po -n dev --output="jsonpath={.items..phase}")
-    if [[ "$POD_STATE" == "Running" ]]; then
-        echo "Application is running."
-        break
-    ficlear
+until sudo kubectl get po -n dev --output="jsonpath={.items..phase}" | grep -q "Running"; do
     echo "Creating app, waiting..."
     sleep 10
 done
