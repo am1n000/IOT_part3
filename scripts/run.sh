@@ -22,8 +22,12 @@ echo "Installing ArgoCD..."
 sudo kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 check_success "ArgoCD installation"
 
+echo "------ checking current context--------"
+sudo kubectl config current-context
+echo "------ checking current context--------"
+
 echo "Waiting for ArgoCD pods to be ready..."
-sudo kubectl wait --for=condition=Ready pods --all -n argocd
+sudo kubectl wait -n argocd --for=condition=Ready pods --all --timeout=60s
 check_success "ArgoCD readiness"
 
 echo "Retrieving ArgoCD admin password..."
