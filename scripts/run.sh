@@ -17,10 +17,5 @@ echo "ArgoCD admin password: $ARGOCD_PASSWORD"
 
 sudo kubectl apply -f "../confs/app.yaml"
 
-until sudo kubectl get po -n dev --output="jsonpath={.items..phase}" | grep -q "Running"; do
-    echo "Creating app, waiting..."
-    sleep 10
-done
-
 sudo kubectl port-forward svc/argocd-server -n argocd 8080:443
 
