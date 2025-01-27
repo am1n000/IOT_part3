@@ -14,7 +14,7 @@ sudo apt-get install ca-certificates curl gnupg lsb-release -y
 sudo mkdir -m 0755 -p /etc/apt/keyrings
 
 # Download and add Docker's official GPG key to the keyring
-curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg -y
+curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --batch --yes --dearmor -o /etc/apt/keyrings/docker.gpg
 
 # Add the Docker APT repository to the system sources list
 echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg]  \
